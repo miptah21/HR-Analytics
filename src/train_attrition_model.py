@@ -136,6 +136,21 @@ def evaluate(model, X_test, y_test):
     print(classification_report(y_test, y_pred))
     print(f"  F2-Score: {f2:.4f}  |  ROC-AUC: {auc:.4f}")
     
+    # -- ALGORITHMIC FAIRNESS AUDIT (Fairlearn) --
+    try:
+        from fairlearn.metrics import demographic_parity_difference
+        if 'Gender_Male' in X_test.columns:
+            sensitive_features = X_test['Gender_Male']
+            dpd = demographic_parity_difference(y_test, y_pred, sensitive_features=sensitive_features)
+            print("\n  -- Algorithmic Fairness Audit --")
+            print(f"  Demographic Parity Difference (Gender): {dpd:.4f}")
+            if dpd > 0.1:
+                print("  [WARNING] High bias detected! Consider mitigation strategies.")
+            else:
+                print("  [PASS] Bias within acceptable threshold.")
+    except ImportError:
+        print("\n  [INFO] fairlearn not installed. Skipping fairness audit.")
+    
     # Save confusion matrix
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     fig, ax = plt.subplots(figsize=(6, 4))

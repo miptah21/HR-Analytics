@@ -62,6 +62,7 @@ class PredictionResponse(BaseModel):
     Risk_Tier: str
     Expected_Financial_Loss: float
     Top_Risk_Drivers: dict
+    Retention_Strategy: str = ""
 
 # ── Startup Event ─────────────────────────────────────────────────────
 @app.on_event("startup")
@@ -166,12 +167,38 @@ def predict_attrition(employee: EmployeeData):
         top_drivers = {feat: round(float(val), 4) for feat, val in feature_impacts if val > 0}
         top_3_drivers = dict(list(top_drivers.items())[:3])
         
+        # 5. LLM Retention Copilot
+        retention_strategy = "Continue regular check-ins."
+        if tier in ["High", "Medium"]:
+            try:
+                import os
+                from google import genai
+                api_key = os.environ.get("GEMINI_API_KEY")
+                if api_key:
+                    client = genai.Client(api_key=api_key)
+                    prompt = f"""
+                    You are an expert HR Business Partner. 
+                    An employee in the '{employee.JobRole}' role is a high flight risk.
+                    Top predictive drivers for their departure: {top_3_drivers}.
+                    Write a brief, 2-sentence actionable retention strategy for their manager.
+                    Do not mention 'AI' or 'SHAP'. Focus purely on human management tactics.
+                    """
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                    )
+                    retention_strategy = response.text.strip()
+            except Exception as e:
+                print(f"LLM Generation Failed: {e}")
+
+        # Construct final response
         return PredictionResponse(
             EmployeeID=employee.EmployeeID,
             Risk_Probability=round(proba, 4),
             Risk_Tier=tier,
             Expected_Financial_Loss=expected_loss,
-            Top_Risk_Drivers=top_3_drivers
+            Top_Risk_Drivers=top_3_drivers,
+            Retention_Strategy=retention_strategy
         )
         
     except Exception as e:
