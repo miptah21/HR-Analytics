@@ -23,7 +23,7 @@ jobs:
       
     - name: Install dependencies
       run: |
-        uv pip install --system pandas numpy xgboost shap optuna scikit-learn matplotlib seaborn fastapi uvicorn pydantic google-genai fairlearn
+        uv pip install --system pandas numpy xgboost shap optuna scikit-learn matplotlib seaborn fastapi uvicorn pydantic google-genai fairlearn evidently
 
     - name: Run Pipeline & Fairness Audit
       run: |

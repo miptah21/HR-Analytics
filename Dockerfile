@@ -16,7 +16,7 @@ RUN pip install uv
 COPY . /app
 
 # Install Python dependencies globally within the container via uv
-RUN uv pip install --system fastapi uvicorn xgboost shap pandas numpy pydantic google-genai fairlearn optuna scikit-learn matplotlib seaborn
+RUN uv pip install --system fastapi uvicorn xgboost shap pandas numpy pydantic google-genai fairlearn optuna scikit-learn matplotlib seaborn evidently
 
 # Expose the API port
 EXPOSE 8000

@@ -263,6 +263,26 @@ def generate_eda(df: pd.DataFrame):
     plt.close(fig)
     print("  EDA charts saved.")
 
+# ── 9. MODEL OBSERVABILITY (Evidently AI) ─────────────────────────────
+def generate_drift_report(X_train, X_test):
+    """Generate HTML report for Data Drift and Data Quality using Evidently."""
+    try:
+        from evidently.report import Report
+        from evidently.metric_preset import DataDriftPreset, DataQualityPreset
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        
+        report = Report(metrics=[
+            DataDriftPreset(),
+            DataQualityPreset()
+        ])
+        
+        # Compare test set (current) vs train set (reference)
+        report.run(reference_data=X_train, current_data=X_test)
+        report.save_html(str(OUT_DIR / 'evidently_drift_report.html'))
+        print("  [PASS] Evidently AI Data Drift & Quality report saved to HTML.")
+    except ImportError:
+        print("  [INFO] evidently not installed. Skipping drift report.")
+
 
 # ── MAIN PIPELINE ─────────────────────────────────────────────────────
 def main():
@@ -315,6 +335,10 @@ def main():
     # Risk Framework & Cost Model
     print("\n-- Building Risk Framework & Cost Model --")
     risk_df = build_risk_framework(model, X_test, y_test, df, X.columns)
+    
+    # Model Observability (Drift)
+    print("\n[8/8] Generating Data Drift Report (Evidently AI)...")
+    generate_drift_report(X_train, X_test)
     
     print("\n" + "=" * 60)
     print("  Pipeline complete. All outputs saved to ./outputs/")
