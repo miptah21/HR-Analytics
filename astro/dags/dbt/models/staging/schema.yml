@@ -1,0 +1,66 @@
+version: 2
+
+models:
+  - name: stg_hris
+    description: "Cleaned and type-cast HRIS employee records from dlt raw ingestion."
+    columns:
+      - name: employee_number
+        description: "Unique employee identifier from source HRIS system."
+        tests:
+          - unique
+          - not_null
+
+      - name: age
+        description: "Employee age in years."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 18
+              max_value: 70
+
+      - name: attrition
+        description: "Whether the employee has left the company."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Yes', 'No']
+
+      - name: monthly_income
+        description: "Monthly salary in USD."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+
+      - name: over_time
+        description: "Whether employee works overtime."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Yes', 'No']
+
+      - name: department
+        description: "Employee department."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Sales', 'Research & Development', 'Human Resources']
+
+      - name: job_role
+        description: "Employee job role."
+        tests:
+          - not_null
+
+      - name: years_at_company
+        description: "Tenure in years."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: work_life_balance
+        description: "Work-life balance rating (1-4)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4]

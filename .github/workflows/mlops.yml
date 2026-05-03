@@ -2,29 +2,107 @@ name: HR MLOps Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+env:
+  UV_CACHE_DIR: .uv-cache
 
 jobs:
-  build-and-test:
+  lint-and-test:
     runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        
-    - name: Install uv
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      
-    - name: Install dependencies
-      run: |
-        uv pip install --system pandas numpy xgboost shap optuna scikit-learn matplotlib seaborn fastapi uvicorn pydantic google-genai fairlearn evidently
 
-    - name: Run Pipeline & Fairness Audit
-      run: |
-        uv run python src/train_attrition_model.py
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run --with ruff ruff check src tests --output-format=github
+
+      - name: Run backend tests
+        run: uv run pytest tests/ -v --tb=short
+
+      - name: Validate imports
+        run: |
+          uv run python -c "from src.features import engineer_features_batch; print('Feature module OK')"
+          uv run python -c "from src.api import app; print('API module OK')"
+          uv run python -c "from src.models import ScoringExclusion, mask_employee_id; print('Models OK')"
+
+  frontend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: bun run test
+
+  # ── G-15: Container Vulnerability Scanning ─────────────────────────
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: [lint-and-test]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image for scanning
+        run: docker build -t hr-analytics-backend:scan .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'hr-analytics-backend:scan'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Run Trivy SBOM generation
+        if: github.ref == 'refs/heads/main'
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'hr-analytics-backend:scan'
+          format: 'cyclonedx'
+          output: 'sbom.json'
+
+      - name: Upload SBOM artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [lint-and-test, frontend-test, security-scan]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose build

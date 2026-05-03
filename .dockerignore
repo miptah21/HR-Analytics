@@ -5,3 +5,11 @@ __pycache__
 outputs/
 .git
 .github
+.tmp
+.tmp2
+*.tmp*
+.tmp_bak
+.tmp2_bak
+.agents
+frontend/node_modules
+node_modules

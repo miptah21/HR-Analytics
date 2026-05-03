@@ -1,0 +1,62 @@
+# ── Production Docker Compose Override ─────────────────────────────────
+# Applies security hardening on top of docker-compose.yml.
+#
+# Usage:
+#   podman compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# What this changes vs. base config:
+#   1. Removes PostgreSQL port mapping (no external access)
+#   2. Adds connection limits to PostgreSQL
+#   3. Disables Swagger docs exposure via env var
+#   4. Sets stricter resource limits
+
+services:
+  postgres:
+    # ── CRITICAL: Remove host port mapping ──────────────────────────
+    # In production, PostgreSQL should ONLY be accessible via
+    # the internal Docker network. No external connections.
+    ports: !reset []
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=50"
+      - "-c"
+      - "log_connections=on"
+      - "-c"
+      - "log_disconnections=on"
+      - "-c"
+      - "log_statement=ddl"
+      - "-c"
+      - "password_encryption=scram-sha-256"
+
+  backend:
+    environment:
+      - ENV=production
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_API_KEY_2=${GEMINI_API_KEY_2}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_API_KEY_2=${GROQ_API_KEY_2}
+      - GROQ_API_KEY_3=${GROQ_API_KEY_3}
+      - API_SECRET_KEY=${API_SECRET_KEY}
+      - ALLOWED_ORIGINS=https://${DOMAIN:-localhost}
+      - RBAC_KEYS=${RBAC_KEYS}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Disable Swagger UI in production
+      - DOCS_ENABLED=false
+
+  nginx:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 5

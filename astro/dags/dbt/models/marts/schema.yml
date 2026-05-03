@@ -1,0 +1,76 @@
+version: 2
+
+models:
+  - name: fct_attrition_features
+    description: >
+      Feature-engineered fact table for the attrition ML pipeline.
+      Contains raw attributes plus 9 derived features (compa_ratio, burnout_risk, etc.).
+      Materialized as a TABLE for efficient downstream consumption.
+    columns:
+      - name: employee_number
+        description: "Unique employee identifier."
+        tests:
+          - unique
+          - not_null
+
+      - name: attrition
+        description: "Binary attrition label (0=stayed, 1=left)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+
+      - name: monthly_income
+        description: "Monthly salary — must be positive."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+
+      - name: compa_ratio
+        description: "Employee pay relative to role average. Values near 1.0 = at market."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: burnout_risk
+        description: "Composite burnout indicator (OT × Distance / WLB)."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: engagement_index
+        description: "Average of 4 satisfaction metrics (1-4 scale). Expected range 1.0–4.0."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 4
+
+      - name: promotion_stagnation
+        description: "Ratio of years since promotion to total tenure."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: travel_burden
+        description: "Ordinal travel frequency (0=None, 1=Rarely, 2=Frequently)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1, 2]
+
+      - name: years_at_company
+        description: "Tenure must be non-negative."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: years_in_current_role
+        description: "Must not exceed years_at_company."
+        tests:
+          - not_null

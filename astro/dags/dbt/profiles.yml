@@ -1,0 +1,12 @@
+hr_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('DBT_HOST', 'host.docker.internal') }}"
+      user: "{{ env_var('POSTGRES_USER', 'hr_admin') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+      port: "{{ env_var('DBT_PORT', '5432') | int }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'hr_analytics') }}"
+      schema: public
+      threads: 4

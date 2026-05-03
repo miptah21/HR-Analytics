@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: raw_hris
+    database: hr_analytics
+    schema: raw_hris
+    tables:
+      - name: employee_attrition_records

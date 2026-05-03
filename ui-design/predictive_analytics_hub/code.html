@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HR Attrition Intelligence - Predictive Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#001c0d",
+                    "surface-container-high": "#dce9ff",
+                    "on-tertiary-fixed": "#002110",
+                    "surface-dim": "#cbdbf5",
+                    "on-surface": "#0b1c30",
+                    "on-error-container": "#93000a",
+                    "on-background": "#0b1c30",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#b6c6f0",
+                    "on-primary-fixed": "#071b3b",
+                    "primary-container": "#1a2b4c",
+                    "surface-container-low": "#eff4ff",
+                    "primary": "#031636",
+                    "surface-variant": "#d3e4fe",
+                    "surface-bright": "#f8f9ff",
+                    "tertiary-container": "#00331c",
+                    "on-tertiary-container": "#43a470",
+                    "primary-fixed": "#d8e2ff",
+                    "on-primary-fixed-variant": "#364669",
+                    "error-container": "#ffdad6",
+                    "on-tertiary": "#ffffff",
+                    "inverse-surface": "#213145",
+                    "tertiary-fixed": "#95f7bb",
+                    "on-secondary-container": "#004a6d",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#8293ba",
+                    "inverse-primary": "#b6c6f0",
+                    "on-surface-variant": "#44474e",
+                    "surface-tint": "#4e5e82",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#58bcfd",
+                    "on-secondary-fixed": "#001e2f",
+                    "secondary-fixed": "#cae6ff",
+                    "background": "#f8f9ff",
+                    "outline-variant": "#c5c6cf",
+                    "inverse-on-surface": "#eaf1ff",
+                    "surface": "#f8f9ff",
+                    "secondary-fixed-dim": "#8ccdff",
+                    "on-secondary-fixed-variant": "#004b6f",
+                    "outline": "#75777f",
+                    "on-tertiary-fixed-variant": "#005230",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#d3e4fe",
+                    "tertiary-fixed-dim": "#7adaa1",
+                    "surface-container": "#e5eeff",
+                    "secondary": "#006492",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "lg": "32px",
+                    "sidebar-width": "260px",
+                    "base": "4px",
+                    "md": "24px",
+                    "sm": "16px",
+                    "gutter": "24px",
+                    "container-max": "1440px",
+                    "xl": "48px",
+                    "xs": "8px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "body-md": ["Inter"],
+                    "data-mono": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "title-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "400"}],
+                    "data-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400"}],
+                    "title-sm": ["18px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { background-color: #f8f9ff; }
+    </style>
+</head>
+<body class="font-body-md text-on-background">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 z-50 bg-[#1A2B4C] text-white font-inter text-sm antialiased border-r border-slate-700 shadow-xl flex flex-col h-screen">
+<div class="p-6">
+<div class="text-xl font-black tracking-tight text-white uppercase mb-1">Attrition Intel</div>
+<div class="text-[10px] text-slate-400 font-bold tracking-widest uppercase mb-8">Corporate Modernism</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Executive Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-teal-600/20 text-teal-400 border-l-4 border-teal-500 font-semibold transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span>Predictive Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+<span>Employee Profiles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span>Retention Strategy</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6 border-t border-slate-700">
+<button class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded transition-colors mb-6 text-xs uppercase tracking-widest">
+                Generate Report
+            </button>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span>Support</span>
+</a>
+</nav>
+<div class="mt-6 flex items-center gap-3">
+<img alt="HR Executive Avatar" class="w-8 h-8 rounded-full border border-slate-600" data-alt="A professional headshot of a corporate HR executive with a neutral background, wearing a charcoal grey business suit. The lighting is crisp and professional, reflecting a high-end corporate environment with a focus on trust and leadership. The aesthetic is clean and modern, following light-mode design principles." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8xMOVjsZwbH3R-OiZwrOGd5f4U-ej3E1LbUffS6PpaU4e6fcoE-CFVeJSJnWt7parZy1-WwP7IWuInYFobmmROar7VDxd63PniV1nVF0WWhBGsk2OeFOnRMZy4PYwn1Y7D68rdcsezvS3aGFXC1n1fgaNUK3UF1pUcmdnZ1o8CULFKhS0PJW0jBemYPdsAyVbXK1_bC2uEA3_k_bkYqTg2JpRhfCjMBJhafPkXCii6mmn0vqkBjBk5AMqqifqidb36Y1h3zje1Xo"/>
+<div class="overflow-hidden">
+<p class="text-xs font-bold truncate">Executive User</p>
+<p class="text-[10px] text-slate-500 truncate">Strategic HR Director</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center px-8 h-16 font-inter text-sm tracking-wide">
+<div class="flex items-center gap-8">
+<div class="text-lg font-bold text-slate-900 dark:text-white">HR Attrition Intelligence</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-slate-50 border-none rounded-md text-xs focus:ring-1 focus:ring-teal-500 w-64" placeholder="Search insights..." type="text"/>
+</div>
+<nav class="flex gap-6">
+<a class="text-teal-600 border-b-2 border-teal-600 pb-1 font-semibold" href="#">Risk Alerts</a>
+<a class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Q3 Forecast</a>
+<a class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Departmental View</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-[#1A2B4C] text-white px-4 py-1.5 rounded text-xs font-bold hover:opacity-90 active:scale-95 transition-all">Export Data</button>
+<div class="flex gap-2">
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-md transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-md transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 px-8 pb-12">
+<div class="max-w-[1440px] mx-auto">
+<!-- Page Header & Filters -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface mb-2">Predictive Analytics Hub</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl">Advanced modeling identifying key turnover drivers and individual employee risk profiles using historical behavior and engagement metrics.</p>
+</div>
+<div class="flex gap-4 items-center">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Department</label>
+<select class="border-outline border rounded-lg px-3 py-1.5 text-body-sm bg-white focus:border-secondary transition-colors">
+<option>All Departments</option>
+<option>R&amp;D</option>
+<option>Sales</option>
+<option>Human Resources</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Job Role</label>
+<select class="border-outline border rounded-lg px-3 py-1.5 text-body-sm bg-white focus:border-secondary transition-colors">
+<option>All Roles</option>
+<option>Manager</option>
+<option>Developer</option>
+<option>Analyst</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Field</label>
+<select class="border-outline border rounded-lg px-3 py-1.5 text-body-sm bg-white focus:border-secondary transition-colors">
+<option>All Education</option>
+<option>Life Sciences</option>
+<option>Medical</option>
+<option>Marketing</option>
+</select>
+</div>
+<button class="mt-5 p-2 bg-white border border-outline rounded-lg text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- KPI Row -->
+<div class="col-span-12 grid grid-cols-4 gap-6 mb-2">
+<div class="bg-white border border-outline-variant p-md rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase">At-Risk Total</p>
+<h3 class="font-display-lg text-display-lg text-on-surface">142</h3>
+</div>
+<div class="flex justify-between items-end mt-4">
+<span class="text-error font-bold text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span> +12% vs LY
+                            </span>
+<div class="w-20 h-8 bg-error-container/20 rounded relative overflow-hidden">
+<div class="absolute inset-0 flex items-end">
+<div class="h-[20%] w-1/5 bg-error/30"></div>
+<div class="h-[40%] w-1/5 bg-error/30"></div>
+<div class="h-[30%] w-1/5 bg-error/30"></div>
+<div class="h-[60%] w-1/5 bg-error/30"></div>
+<div class="h-[80%] w-1/5 bg-error/60"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white border border-outline-variant p-md rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Avg. Risk Score</p>
+<h3 class="font-display-lg text-display-lg text-on-surface">42.8</h3>
+</div>
+<div class="flex justify-between items-end mt-4">
+<span class="text-on-tertiary-container font-bold text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="trending_down">trending_down</span> -2.4% vs LY
+                            </span>
+<div class="w-20 h-8 bg-tertiary-container/10 rounded relative overflow-hidden">
+<div class="absolute inset-0 flex items-end">
+<div class="h-[70%] w-1/5 bg-on-tertiary-container/30"></div>
+<div class="h-[60%] w-1/5 bg-on-tertiary-container/30"></div>
+<div class="h-[50%] w-1/5 bg-on-tertiary-container/30"></div>
+<div class="h-[45%] w-1/5 bg-on-tertiary-container/30"></div>
+<div class="h-[40%] w-1/5 bg-on-tertiary-container/60"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white border border-outline-variant p-md rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Critical Retention</p>
+<h3 class="font-display-lg text-display-lg text-on-surface">18</h3>
+</div>
+<p class="text-xs text-on-surface-variant mt-4">Employees in "Very High" risk category (&gt;85 score)</p>
+</div>
+<div class="bg-white border border-outline-variant p-md rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Prediction Accuracy</p>
+<h3 class="font-display-lg text-display-lg text-on-surface">91%</h3>
+</div>
+<p class="text-xs text-on-surface-variant mt-4">Model confidence based on historical testing</p>
+</div>
+</div>
+<!-- Risk Heatmap (Bento Large) -->
+<div class="col-span-12 lg:col-span-7 bg-white border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-md py-sm border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-title-sm text-title-sm text-on-surface">Risk Heatmap: OverTime vs Job Satisfaction</h2>
+<div class="flex items-center gap-4 text-[10px] font-bold text-on-surface-variant">
+<div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-surface-container-highest"></div> LOW</div>
+<div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-secondary-container"></div> MED</div>
+<div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-error"></div> HIGH RISK</div>
+</div>
+</div>
+<div class="p-lg grid grid-cols-4 grid-rows-2 gap-4 h-[400px]">
+<!-- Satisfaction Rows -->
+<div class="col-start-1 row-start-1 flex items-center justify-end pr-4 font-label-caps text-xs text-on-surface-variant">Satisfied</div>
+<div class="col-start-1 row-start-2 flex items-center justify-end pr-4 font-label-caps text-xs text-on-surface-variant">Unsatisfied</div>
+<!-- Heatmap Cells -->
+<div class="bg-surface-container-low rounded-lg p-4 flex flex-col justify-between group hover:ring-2 hover:ring-outline transition-all">
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">No OverTime</span>
+<div class="text-center">
+<span class="text-2xl font-bold">12%</span>
+<p class="text-[10px]">Attrition Rate</p>
+</div>
+</div>
+<div class="bg-surface-container-highest rounded-lg p-4 flex flex-col justify-between group hover:ring-2 hover:ring-outline transition-all">
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">Occasional OT</span>
+<div class="text-center">
+<span class="text-2xl font-bold">18%</span>
+<p class="text-[10px]">Attrition Rate</p>
+</div>
+</div>
+<div class="bg-secondary-container/40 rounded-lg p-4 flex flex-col justify-between group hover:ring-2 hover:ring-outline transition-all">
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">Frequent OT</span>
+<div class="text-center">
+<span class="text-2xl font-bold">28%</span>
+<p class="text-[10px]">Attrition Rate</p>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="bg-secondary-container/60 rounded-lg p-4 flex flex-col justify-between group hover:ring-2 hover:ring-outline transition-all">
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">No OverTime</span>
+<div class="text-center">
+<span class="text-2xl font-bold">34%</span>
+<p class="text-[10px]">Attrition Rate</p>
+</div>
+</div>
+<div class="bg-secondary-container rounded-lg p-4 flex flex-col justify-between group hover:ring-2 hover:ring-outline transition-all">
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">Occasional OT</span>
+<div class="text-center">
+<span class="text-2xl font-bold">46%</span>
+<p class="text-[10px]">Attrition Rate</p>
+</div>
+</div>
+<div class="bg-error/80 text-white rounded-lg p-4 flex flex-col justify-between group hover:ring-2 hover:ring-white transition-all shadow-lg">
+<span class="text-[10px] uppercase font-bold text-white/70">Frequent OT</span>
+<div class="text-center">
+<span class="text-2xl font-bold">72%</span>
+<p class="text-[10px] text-white/70">Attrition Rate</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Prediction Driver Chart (Bento Small) -->
+<div class="col-span-12 lg:col-span-5 bg-white border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="px-md py-sm border-b border-outline-variant">
+<h2 class="font-title-sm text-title-sm text-on-surface">Primary Risk Correlates</h2>
+</div>
+<div class="p-md flex-1 flex flex-col gap-6">
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+<span>Work-Life Balance</span>
+<span>High Impact</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#1A2B4C] w-[88%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+<span>Frequent Travel</span>
+<span>Moderate Impact</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[62%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+<span>Job Involvemet</span>
+<span>Moderate Impact</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[45%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+<span>Distance From Home</span>
+<span>Low Impact</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-on-primary-container w-[28%]"></div>
+</div>
+</div>
+<div class="mt-auto bg-primary-container text-on-primary-container p-4 rounded-lg flex items-start gap-3">
+<span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+<p class="text-xs leading-relaxed">
+                                Employees reporting "Low" satisfaction combined with "High" overtime frequency are <span class="font-bold text-white">4.2x more likely</span> to churn within the next 6 months.
+                            </p>
+</div>
+</div>
+</div>
+<!-- High Risk Employees List -->
+<div class="col-span-12 bg-white border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-md py-sm border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-title-sm text-title-sm text-on-surface">High Risk Employees</h2>
+<div class="flex gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm" data-icon="search">search</span>
+<input class="pl-8 pr-4 py-1 bg-slate-50 border border-outline rounded text-xs w-48" placeholder="Filter by name..." type="text"/>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-md py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Employee</th>
+<th class="px-md py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Risk Score</th>
+<th class="px-md py-3 font-label-caps text-label-caps text-on-surface-variant uppercase text-center">Trend</th>
+<th class="px-md py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Key Risk Factors</th>
+<th class="px-md py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Last Promotion</th>
+<th class="px-md py-3 text-right"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-md py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Employee Headshot" class="w-full h-full object-cover" data-alt="A detailed professional headshot of a female software engineer in her late 20s. She is smiling naturally in a brightly lit, modern office setting with soft focus on the tech environment in the background. The color palette is composed of cool blues and clean whites, aligning with high-end corporate UI standards." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQlTRDf49cd8ehLawBifSKElTUxsxdREygLkA3vA_EciSZWYJZjer2aUzubsQTz-h04PhevOm2raeD9x_iZHDC9aBFzNJYYZezzb6xG3VXrMjBjBKYgBOT2xrVZ9ft2M3NUYIUv846_JBmR4MDMHZNQykf-Fn7va5-DdBQtrZGotCnjmJbLqDkqyOiuBogrdlFvt-SY_iBlefkjZZdEAi1UNnePpbxw_57RAGLvPu7AAgqdtihAmNzwus5hPk_JgjX1thFNnvUM_E"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Elena Smith</p>
+<p class="text-xs text-on-surface-variant">Senior Developer · R&amp;D</p>
+</div>
+</div>
+</td>
+<td class="px-md py-4">
+<div class="flex items-center gap-2">
+<div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error w-[92%]"></div>
+</div>
+<span class="font-data-mono text-error font-black">92</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-error" data-icon="arrow_upward">arrow_upward</span>
+</td>
+<td class="px-md py-4">
+<div class="flex flex-wrap gap-2">
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded text-[10px] font-bold">Frequent Travel</span>
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded text-[10px] font-bold">Low Job Sat.</span>
+</div>
+</td>
+<td class="px-md py-4 text-body-sm text-on-surface-variant">3.5 Years Ago</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary font-bold text-xs uppercase tracking-widest hover:underline px-3 py-1 border border-secondary rounded-md">View Profile</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-md py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Employee Headshot" class="w-full h-full object-cover" data-alt="A professional portrait of a male corporate account manager in his early 40s. He has a confident, approachable expression, photographed in a sleek boardroom with large windows behind him. The lighting is bright and even, reinforcing a corporate professional atmosphere using a soft teal and navy blue color theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcAGKjnaBsX-cXqpwVjH3YByRag_FMMQ5x2DOvbBDxqc5iy85s6U-onpMhmOr4vBa58aI-cu8hIqPr7qlgqsC74iGbiWoavmqacL7UZKcU4tG4gl0fxwQ07rhXaCl3BABYO0snZEYqdD2PGfKc_C60p8TuF5Mb_ToilZS5_XcAz_mKpRdEd1AGjY_rE29FTitZntmGExaby1xD6Q2g96GCqJ28ivoq_LHzsGmqedPln0P1bGy25fH86xToYQULFLU-2EndcQM2Nbo"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Marcus Chen</p>
+<p class="text-xs text-on-surface-variant">Sales Director · Sales</p>
+</div>
+</div>
+</td>
+<td class="px-md py-4">
+<div class="flex items-center gap-2">
+<div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error w-[87%]"></div>
+</div>
+<span class="font-data-mono text-error font-black">87</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-error" data-icon="arrow_upward">arrow_upward</span>
+</td>
+<td class="px-md py-4">
+<div class="flex flex-wrap gap-2">
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded text-[10px] font-bold">High OverTime</span>
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded text-[10px] font-bold">Stock Options 0</span>
+</div>
+</td>
+<td class="px-md py-4 text-body-sm text-on-surface-variant">1.2 Years Ago</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary font-bold text-xs uppercase tracking-widest hover:underline px-3 py-1 border border-secondary rounded-md">View Profile</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-md py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Employee Headshot" class="w-full h-full object-cover" data-alt="Close-up professional headshot of a female project manager in her 30s. She is dressed in business casual attire, with a background of a modern architectural office staircase. The shot is high-key with clear, sharp details, emphasizing a professional and focused persona in a corporate-modern style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJgLomTpJpGcvg2-PjF6G1hVny2i-DQ2HND_FhrjikRghlSjDZ1YqmyRABFfVbuRCkjqK55Vj6FmSglkAO933HsveMgYJPgaKmqRCrh8FEuJFfFHTuEEkRM9Do79lzTXPmb51l4t_MNfMU3TH_dCi2b0-K_mNOBsbHFe0vImt5_Dt-d7_w8jWHEtkN6R8FA01VTKzlWzBLL6i-ISp8BT6ukE6Ym7v8SrYRSy2zJ-u61jE86A1wDMsrWOnhqOuIWFZdwGj_StGAwIU"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Julia Parker</p>
+<p class="text-xs text-on-surface-variant">UX Researcher · Marketing</p>
+</div>
+</div>
+</td>
+<td class="px-md py-4">
+<div class="flex items-center gap-2">
+<div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[76%]"></div>
+</div>
+<span class="font-data-mono text-secondary font-black">76</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-slate-400" data-icon="horizontal_rule">horizontal_rule</span>
+</td>
+<td class="px-md py-4">
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/20 text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold">Low Work-Life Bal.</span>
+<span class="bg-secondary-container/20 text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold">Long Commute</span>
+</div>
+</td>
+<td class="px-md py-4 text-body-sm text-on-surface-variant">2.8 Years Ago</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary font-bold text-xs uppercase tracking-widest hover:underline px-3 py-1 border border-secondary rounded-md">View Profile</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-md py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Employee Headshot" class="w-full h-full object-cover" data-alt="Professional studio portrait of a male data analyst in a light blue oxford shirt. The background is a clean white minimalist wall with soft shadows. The lighting is soft and flattering, creating a polished, high-trust executive image. The overall visual style is corporate-modern with high clarity and contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8wtuWyvj0bYiEQtkIgB1v0Ysdxbc5YpY3Eohs5MWCQgcrTy5Le858t2wGxiTj90bmhB_8MDCsOMY0z15xe-2AS2OAXPWNsXS9Cz-fQu8MhXmo5REXQcJf8VGAYkdspMoYQ7D3Myzd_a1QQK6ONbeg18koVKlL1GBs4KcGiWWi2IjwLHVi8iKtyGJsm1MOLPMIFoM59UZ693ZOCrNyRn9GmmLs8N3emOkHCDGDS8cuZUdoBiOI47jw0W5L8wZFTHFzjdnIfMLo9OY"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">David Brooks</p>
+<p class="text-xs text-on-surface-variant">Financial Analyst · HR</p>
+</div>
+</div>
+</td>
+<td class="px-md py-4">
+<div class="flex items-center gap-2">
+<div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[72%]"></div>
+</div>
+<span class="font-data-mono text-secondary font-black">72</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="arrow_downward">arrow_downward</span>
+</td>
+<td class="px-md py-4">
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/20 text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold">Distance From Home</span>
+<span class="bg-secondary-container/20 text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold">Frequent Travel</span>
+</div>
+</td>
+<td class="px-md py-4 text-body-sm text-on-surface-variant">0.5 Years Ago</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary font-bold text-xs uppercase tracking-widest hover:underline px-3 py-1 border border-secondary rounded-md">View Profile</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-md py-sm bg-surface-container-low border-t border-outline-variant flex justify-between items-center text-xs text-on-surface-variant font-bold">
+<span>Showing 4 of 142 High-Risk records</span>
+<div class="flex gap-4">
+<button class="hover:text-primary transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span> Previous</button>
+<button class="hover:text-primary transition-colors flex items-center gap-1">Next <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

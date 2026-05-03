@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HR Analyst Dashboard - Attrition Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary-fixed": "#002110",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-high": "#dce9ff",
+                        "on-surface": "#0b1c30",
+                        "inverse-primary": "#b6c6f0",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#364669",
+                        "surface-tint": "#4e5e82",
+                        "primary-fixed-dim": "#b6c6f0",
+                        "inverse-surface": "#213145",
+                        "on-primary-fixed": "#071b3b",
+                        "on-secondary-fixed": "#001e2f",
+                        "on-secondary-fixed-variant": "#004b6f",
+                        "outline": "#75777f",
+                        "secondary-fixed": "#cae6ff",
+                        "on-error-container": "#93000a",
+                        "background": "#f8f9ff",
+                        "surface-bright": "#f8f9ff",
+                        "outline-variant": "#c5c6cf",
+                        "on-tertiary-fixed-variant": "#005230",
+                        "tertiary-fixed": "#95f7bb",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "secondary": "#006492",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary": "#001c0d",
+                        "error": "#ba1a1a",
+                        "surface": "#f8f9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-background": "#0b1c30",
+                        "primary": "#031636",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#8ccdff",
+                        "on-surface-variant": "#44474e",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary-container": "#43a470",
+                        "on-secondary-container": "#004a6d",
+                        "on-primary-container": "#8293ba",
+                        "tertiary-fixed-dim": "#7adaa1",
+                        "surface-container-low": "#eff4ff",
+                        "primary-container": "#1a2b4c",
+                        "tertiary-container": "#00331c",
+                        "secondary-container": "#58bcfd",
+                        "on-tertiary": "#ffffff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "sm": "16px",
+                        "xs": "8px",
+                        "container-max": "1440px",
+                        "md": "24px",
+                        "lg": "32px",
+                        "sidebar-width": "260px",
+                        "xl": "48px",
+                        "base": "4px",
+                        "gutter": "24px"
+                    },
+                    fontFamily: {
+                        "body-md": ["Inter"],
+                        "data-mono": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "24px", letterSpacing: "0", fontWeight: "400" }],
+                        "data-mono": ["14px", { lineHeight: "20px", letterSpacing: "-0.01em", fontWeight: "500" }],
+                        "title-sm": ["18px", { lineHeight: "24px", letterSpacing: "0", fontWeight: "600" }],
+                        "display-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "body-sm": ["14px", { lineHeight: "20px", letterSpacing: "0", fontWeight: "400" }],
+                        "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "700" }],
+                        "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-sidebar-width z-50 bg-[#1A2B4C] text-white font-inter text-sm antialiased border-r border-slate-700 shadow-xl flex flex-col hidden md:flex">
+<div class="p-6 border-b border-slate-700/50">
+<div class="flex items-center gap-3">
+<img alt="HR Executive Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-slate-600" data-alt="A professional headshot of an executive in a modern corporate setting. The lighting is crisp and even, highlighting a confident expression. The background is a slightly blurred modern office space with subtle navy blue and teal brand elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS0wZrHotTFnishUtGDtquySzCxaA60DwD11Mnx6huSDAJI4YfOj4BSvVD-3N0QgaLIGQ1fMAcyQD--O-EjPRdw0sMiABKMbtEAz80DuQA1_eMY2oLCb-KeNtVwNSjxJEFrT6cW6_cojJMCWQ8gmRJOJP4BXn4hfIN9E9VhRhvX54kiWw3LAHfzMVitTK22U3AP2PDREJ-le7RwS4LwDGcCZTGs1kJzSE3Yp080mai7WJMuljkjc1Uga_OApiFfCcQEFq1_ocxMu8"/>
+<div>
+<h2 class="text-xl font-black tracking-tight text-white uppercase">Attrition Intel</h2>
+<p class="text-xs text-slate-400 uppercase tracking-widest mt-1">Corporate Modernism</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 py-4 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Executive Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span>Predictive Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+<span>Employee Profiles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span>Retention Strategy</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-teal-600/20 text-teal-400 border-l-4 border-teal-500 font-semibold opacity-90 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="analytics" data-weight="fill" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span>Analyst Dashboard</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-700/50">
+<button class="w-full bg-teal-600 text-white py-2 px-4 rounded-md font-medium text-sm hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span> Generate Report
+            </button>
+<div class="mt-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-slate-200 text-xs transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-slate-200 text-xs transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="help_outline">help_outline</span>
+<span>Support</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-0 md:ml-sidebar-width flex flex-col min-h-screen">
+<!-- TopNavBar (Adapted for Filters) -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-260px)] z-40 bg-white border-b border-slate-200 shadow-sm flex justify-between items-center px-8 h-16 font-inter text-sm tracking-wide">
+<div class="flex items-center gap-4 flex-1">
+<h1 class="text-lg font-bold text-slate-900 hidden lg:block">Data Exploration</h1>
+<!-- Advanced Filters -->
+<div class="flex items-center gap-3 ml-0 lg:ml-6 flex-1">
+<div class="relative max-w-xs w-full">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant text-on-surface text-body-sm py-1.5 pl-3 pr-8 rounded focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500">
+<option>All Departments</option>
+<option>Research &amp; Development</option>
+<option>Sales</option>
+<option>Human Resources</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">arrow_drop_down</span>
+</div>
+<div class="relative max-w-xs w-full hidden sm:block">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant text-on-surface text-body-sm py-1.5 pl-3 pr-8 rounded focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500">
+<option>All Job Roles</option>
+<option>Laboratory Technician</option>
+<option>Sales Executive</option>
+<option>Research Scientist</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">arrow_drop_down</span>
+</div>
+<div class="relative max-w-xs w-full hidden md:block">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant text-on-surface text-body-sm py-1.5 pl-3 pr-8 rounded focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500">
+<option>Any Experience Level</option>
+<option>0-2 Years</option>
+<option>3-5 Years</option>
+<option>5+ Years</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">arrow_drop_down</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:bg-slate-50 p-2 rounded-md transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<img alt="Executive User Profile" class="w-8 h-8 rounded-full object-cover border border-slate-300 hidden sm:block" data-alt="A professional headshot of an executive in a modern corporate setting. The lighting is crisp and even, highlighting a confident expression. The background is a slightly blurred modern office space with subtle navy blue and teal brand elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnfzppYxIbkSnlI1vcjhZgmoEq3KwhyM3VRf8anhjMJcc7pzAmwBuY-CnASAlKG5lry-JMNcDfx9doUcaCQepRX_b-nxJ8dIVxDa6otA6JFzrZCpAyz6560aSAr_K_7bJfhtpdtifJI0w9X0mFiqS_R-R17mpmoTNLEpljY67SHlgUnNOGY_v5BJyApOInBhr4qkZIhFALnP7ggSfe4tdoliyOuK7XUL_vRG8NSLZZH-vjsxLJftpl3aOPMqyxBIXuADp9F80GDpg"/>
+<button class="bg-primary text-on-primary px-4 py-2 rounded font-body-sm hover:bg-primary-container hover:text-white transition-colors h-10 ml-2">Export Data</button>
+</div>
+</header>
+<!-- Canvas Area -->
+<main class="flex-1 p-gutter pt-[calc(64px+24px)] overflow-x-hidden bg-background">
+<div class="max-w-container-max mx-auto space-y-gutter">
+<!-- Summary Header -->
+<section class="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between bg-surface-container-lowest p-6 rounded shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30">
+<div>
+<h2 class="font-headline-md text-on-surface">Dataset Selection Overview</h2>
+<p class="font-body-md text-on-surface-variant mt-1">Analyzing current subset based on active filters.</p>
+</div>
+<div class="flex gap-6">
+<div>
+<p class="font-label-caps text-outline uppercase tracking-widest">Total Records</p>
+<p class="font-display-lg text-primary">1,470</p>
+</div>
+<div>
+<p class="font-label-caps text-outline uppercase tracking-widest">Avg Attrition Risk</p>
+<p class="font-display-lg text-error">16.1%</p>
+</div>
+</div>
+</section>
+<!-- Analytics Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Correlation Analysis (Spans 2 columns) -->
+<section class="lg:col-span-2 bg-surface-container-lowest rounded shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 p-6 flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-sm text-on-surface">Correlation Analysis</h3>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-teal-500"></span>
+<span class="font-body-sm text-on-surface-variant">Low Risk</span>
+<span class="w-3 h-3 rounded-full bg-error ml-2"></span>
+<span class="font-body-sm text-on-surface-variant">High Risk</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+<!-- Scatter Plot Placeholder -->
+<div class="border border-outline-variant/50 rounded bg-surface-bright flex flex-col h-64 relative overflow-hidden">
+<div class="absolute inset-0 p-4">
+<p class="font-label-caps text-outline uppercase text-center mb-2">Monthly Income vs Years at Company</p>
+<!-- Decorative scatter pattern representing data -->
+<div class="w-full h-[180px] bg-[radial-gradient(circle_at_20%_80%,_rgba(20,184,166,0.4)_2px,_transparent_3px),_radial-gradient(circle_at_30%_70%,_rgba(186,26,26,0.5)_2px,_transparent_3px),_radial-gradient(circle_at_40%_60%,_rgba(20,184,166,0.3)_2px,_transparent_3px),_radial-gradient(circle_at_50%_50%,_rgba(186,26,26,0.6)_2px,_transparent_3px),_radial-gradient(circle_at_60%_40%,_rgba(20,184,166,0.5)_2px,_transparent_3px),_radial-gradient(circle_at_80%_20%,_rgba(20,184,166,0.4)_2px,_transparent_3px)] bg-[length:30px_30px] opacity-70"></div>
+</div>
+<div class="absolute bottom-2 left-0 w-full flex justify-between px-4 text-[10px] text-outline">
+<span>0 Yrs</span>
+<span>40 Yrs</span>
+</div>
+<div class="absolute left-2 top-0 h-full flex flex-col justify-between py-8 text-[10px] text-outline writing-vertical-lr rotate-180">
+<span>$0</span>
+<span>$20k</span>
+</div>
+</div>
+<!-- Distribution Chart Placeholder -->
+<div class="border border-outline-variant/50 rounded bg-surface-bright flex flex-col h-64 relative overflow-hidden p-4">
+<p class="font-label-caps text-outline uppercase text-center mb-4">Work Life Balance Distribution</p>
+<div class="flex items-end justify-around h-full pb-4 px-2 gap-2">
+<div class="w-1/4 bg-surface-variant rounded-t relative group"><div class="absolute inset-0 bg-error/20 rounded-t h-3/4 bottom-0"></div><div class="absolute -bottom-5 w-full text-center text-xs text-outline">Bad</div></div>
+<div class="w-1/4 bg-surface-variant rounded-t h-3/4 relative group"><div class="absolute inset-0 bg-error/10 rounded-t h-1/2 bottom-0"></div><div class="absolute -bottom-5 w-full text-center text-xs text-outline">Good</div></div>
+<div class="w-1/4 bg-surface-variant rounded-t h-full relative group"><div class="absolute inset-0 bg-teal-500/10 rounded-t h-1/4 bottom-0"></div><div class="absolute -bottom-5 w-full text-center text-xs text-outline">Better</div></div>
+<div class="w-1/4 bg-surface-variant rounded-t h-1/2 relative group"><div class="absolute -bottom-5 w-full text-center text-xs text-outline">Best</div></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Feature Importance Ranking -->
+<section class="bg-surface-container-lowest rounded shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 p-6 flex flex-col h-full">
+<h3 class="font-title-sm text-on-surface mb-6">Key Attrition Drivers</h3>
+<div class="space-y-4 flex-1">
+<div>
+<div class="flex justify-between font-body-sm text-on-surface mb-1">
+<span>OverTime (Yes)</span>
+<span class="font-data-mono font-medium text-error">0.84</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 84%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-body-sm text-on-surface mb-1">
+<span>StockOptionLevel (0)</span>
+<span class="font-data-mono font-medium text-error">0.62</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 62%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-body-sm text-on-surface mb-1">
+<span>JobRole (Sales Exec)</span>
+<span class="font-data-mono font-medium text-surface-tint">0.45</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-surface-tint h-full rounded-full" style="width: 45%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-body-sm text-on-surface mb-1">
+<span>DistanceHome (&gt;10mi)</span>
+<span class="font-data-mono font-medium text-surface-tint">0.38</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-surface-tint h-full rounded-full" style="width: 38%"></div>
+</div>
+</div>
+<div class="pt-4 mt-auto">
+<p class="text-xs text-outline italic text-center">Random Forest Feature Importance</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Raw Data Explorer -->
+<section class="bg-surface-container-lowest rounded shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 overflow-hidden flex flex-col">
+<div class="p-6 border-b border-outline-variant/30 flex justify-between items-center bg-white">
+<h3 class="font-title-sm text-on-surface">Raw Data Explorer</h3>
+<div class="flex gap-2">
+<div class="relative">
+<input class="pl-8 pr-3 py-1.5 border border-outline-variant rounded bg-surface-bright text-body-sm focus:outline-none focus:border-teal-500 w-48 transition-colors" placeholder="Search employee ID..." type="text"/>
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
+</div>
+<button class="border border-teal-600 text-teal-700 px-3 py-1.5 rounded font-body-sm hover:bg-teal-50 transition-colors h-8 flex items-center gap-1 bg-white">
+<span class="material-symbols-outlined text-[16px]">file_download</span> CSV
+                            </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-bright border-b border-outline-variant/50">
+<th class="p-4 w-12 text-center"><input class="rounded border-outline-variant text-teal-600 focus:ring-teal-500" type="checkbox"/></th>
+<th class="p-4 font-label-caps text-on-surface-variant cursor-pointer hover:bg-surface-container-low transition-colors group">Emp ID <span class="material-symbols-outlined text-[14px] align-middle opacity-0 group-hover:opacity-100">arrow_drop_down</span></th>
+<th class="p-4 font-label-caps text-on-surface-variant cursor-pointer hover:bg-surface-container-low transition-colors group">Department <span class="material-symbols-outlined text-[14px] align-middle opacity-0 group-hover:opacity-100">arrow_drop_down</span></th>
+<th class="p-4 font-label-caps text-on-surface-variant cursor-pointer hover:bg-surface-container-low transition-colors group">Job Role <span class="material-symbols-outlined text-[14px] align-middle opacity-0 group-hover:opacity-100">arrow_drop_down</span></th>
+<th class="p-4 font-label-caps text-on-surface-variant text-right cursor-pointer hover:bg-surface-container-low transition-colors group">Years at Co. <span class="material-symbols-outlined text-[14px] align-middle opacity-0 group-hover:opacity-100">arrow_drop_down</span></th>
+<th class="p-4 font-label-caps text-on-surface-variant text-right cursor-pointer hover:bg-surface-container-low transition-colors group">Monthly Income <span class="material-symbols-outlined text-[14px] align-middle opacity-0 group-hover:opacity-100">arrow_drop_down</span></th>
+<th class="p-4 font-label-caps text-on-surface-variant text-center">Risk Status</th>
+</tr>
+</thead>
+<tbody class="font-data-mono text-on-surface divide-y divide-outline-variant/20">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="p-4 text-center"><input class="rounded border-outline-variant text-teal-600 focus:ring-teal-500" type="checkbox"/></td>
+<td class="p-4">1029</td>
+<td class="p-4">Sales</td>
+<td class="p-4">Sales Executive</td>
+<td class="p-4 text-right">8</td>
+<td class="p-4 text-right">$5,490</td>
+<td class="p-4 text-center"><span class="bg-error-container text-on-error-container px-2 py-1 rounded text-xs font-semibold">High</span></td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="p-4 text-center"><input class="rounded border-outline-variant text-teal-600 focus:ring-teal-500" type="checkbox"/></td>
+<td class="p-4">1030</td>
+<td class="p-4">Research &amp; Dev</td>
+<td class="p-4">Laboratory Technician</td>
+<td class="p-4 text-right">1</td>
+<td class="p-4 text-right">$2,900</td>
+<td class="p-4 text-center"><span class="bg-surface-container-highest text-on-surface px-2 py-1 rounded text-xs font-semibold">Medium</span></td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="p-4 text-center"><input class="rounded border-outline-variant text-teal-600 focus:ring-teal-500" type="checkbox"/></td>
+<td class="p-4">1031</td>
+<td class="p-4">Research &amp; Dev</td>
+<td class="p-4">Research Scientist</td>
+<td class="p-4 text-right">12</td>
+<td class="p-4 text-right">$8,500</td>
+<td class="p-4 text-center"><span class="bg-tertiary-fixed text-on-tertiary-container px-2 py-1 rounded text-xs font-semibold">Low</span></td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="p-4 text-center"><input class="rounded border-outline-variant text-teal-600 focus:ring-teal-500" type="checkbox"/></td>
+<td class="p-4">1032</td>
+<td class="p-4">Human Resources</td>
+<td class="p-4">Manager</td>
+<td class="p-4 text-right">5</td>
+<td class="p-4 text-right">$19,200</td>
+<td class="p-4 text-center"><span class="bg-tertiary-fixed text-on-tertiary-container px-2 py-1 rounded text-xs font-semibold">Low</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-outline-variant/30 bg-surface-bright flex justify-between items-center text-body-sm text-on-surface-variant">
+<span>Showing 1 to 4 of 1,470 entries</span>
+<div class="flex gap-1">
+<button class="px-2 py-1 border border-outline-variant rounded hover:bg-surface-container-low disabled:opacity-50" disabled="">&lt;</button>
+<button class="px-2 py-1 border border-outline-variant rounded bg-primary text-on-primary">1</button>
+<button class="px-2 py-1 border border-outline-variant rounded hover:bg-surface-container-low">2</button>
+<button class="px-2 py-1 border border-outline-variant rounded hover:bg-surface-container-low">3</button>
+<span class="px-2 py-1">...</span>
+<button class="px-2 py-1 border border-outline-variant rounded hover:bg-surface-container-low">&gt;</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>
