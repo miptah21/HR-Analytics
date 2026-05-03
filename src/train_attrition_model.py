@@ -1264,8 +1264,11 @@ def main() -> None:
     from src.fairness_mitigation import (
         reconstruct_sensitive_features,
         smote_enn_oversample,
+        smote_oversample_minority,
         compute_fairness_sample_weights,
+        compute_multi_attribute_weights,
         compute_subgroup_thresholds,
+        compute_dpd_constrained_thresholds,
         apply_subgroup_thresholds,
         evaluate_fairness_metrics,
         bootstrap_fairness_ci,
@@ -1310,13 +1313,35 @@ def main() -> None:
         X_train_aug, y_train_aug = X_train, y_train
         sf_train_age_aug = sf_train.get("Age_Group", np.array([]))
 
-    # 7d-C: Recompute sample weights on augmented data
-    print("\n  [7d-C] Cost-Sensitive Retraining with Sample Weights...")
-    if "Age_Group" in sf_train:
-        sample_weights = compute_fairness_sample_weights(sf_train_age_aug, y_train_aug)
-        print(f"    Weight range: [{sample_weights.min():.3f}, {sample_weights.max():.3f}]")
+    # 7d-B2: SMOTE augmentation for MaritalStatus "Other" minority
+    print("\n  [7d-B2] SMOTE Augmentation for MaritalStatus 'Other'...")
+    sf_train_aug_full = reconstruct_sensitive_features(X_train_aug)
+    if "MaritalStatus" in sf_train_aug_full:
+        X_train_aug, y_train_aug, sf_train_ms_aug = smote_oversample_minority(
+            X_train_aug, y_train_aug, sf_train_aug_full["MaritalStatus"],
+            min_positive_per_group=25,
+            k_neighbors=3,
+        )
+    else:
+        sf_train_ms_aug = np.array([])
 
-        # Retrain XGBoost with sample weights
+    # 7d-C: Multi-attribute sample weights (Age + MaritalStatus)
+    print("\n  [7d-C] Cost-Sensitive Retraining with Multi-Attribute Weights...")
+    sf_retrain = reconstruct_sensitive_features(X_train_aug)
+    weight_attrs = {}
+    if "Age_Group" in sf_retrain:
+        weight_attrs["Age_Group"] = sf_retrain["Age_Group"]
+    if "MaritalStatus" in sf_retrain:
+        weight_attrs["MaritalStatus"] = sf_retrain["MaritalStatus"]
+
+    if weight_attrs:
+        sample_weights = compute_multi_attribute_weights(
+            X_train_aug, y_train_aug, weight_attrs, boost_factor=1.5,
+        )
+        print(f"    Weight range: [{sample_weights.min():.3f}, {sample_weights.max():.3f}]")
+        print(f"    Attributes weighted: {list(weight_attrs.keys())}")
+
+        # Retrain XGBoost with multi-attribute sample weights
         xgb_params_fair = {k: v for k, v in best_params.items() if not k.startswith("_")}
         scale_w = float((y_train_aug == 0).sum() / max((y_train_aug == 1).sum(), 1))
         fair_model = xgb.XGBClassifier(
@@ -1326,7 +1351,7 @@ def main() -> None:
             random_state=42,
         )
         fair_model.fit(X_train_aug, y_train_aug, sample_weight=sample_weights)
-        print("    Fair model retrained with SMOTE + sample weights.")
+        print("    Fair model retrained with SMOTE + multi-attribute weights.")
 
         # Recalibrate the fair model
         try:
@@ -1366,7 +1391,31 @@ def main() -> None:
             )
             group_thresholds_all["Age_Group"] = gt
             print(f"    Age_Group manual thresholds: {gt}")
-    print(f"    Gender/MaritalStatus: global threshold {optimal_threshold:.4f}")
+    print(f"    Gender: global threshold {optimal_threshold:.4f}")
+
+    # 7d-D2: ThresholdOptimizer for MaritalStatus (with DPD fallback)
+    ms_postprocessor = None
+    if "MaritalStatus" in sf_cal:
+        print("\n  [7d-D2] Fitting ThresholdOptimizer for MaritalStatus...")
+        ms_postprocessor, ms_to_ok = fit_equalized_odds_postprocessor(
+            fair_calibrated, X_cal, y_cal, sf_cal["MaritalStatus"],
+        )
+        if ms_to_ok:
+            print("    ThresholdOptimizer fitted for MaritalStatus.")
+        else:
+            print("    ThresholdOptimizer failed; using DPD-constrained grid search.")
+            ms_postprocessor = None
+            ms_thresholds = compute_dpd_constrained_thresholds(
+                np.asarray(y_cal), fair_proba_cal, sf_cal["MaritalStatus"],
+                default_threshold=optimal_threshold,
+                min_threshold=0.05,
+                max_threshold=0.55,
+                n_steps=30,
+                min_global_f2=0.35,
+                dpd_target=0.12,
+            )
+            group_thresholds_all["MaritalStatus"] = ms_thresholds
+            print(f"    MaritalStatus DPD-constrained thresholds: {ms_thresholds}")
 
     # 7d-E: Evaluate AFTER mitigation with adaptive quality gates
     print("\n  -- Fairness AFTER Mitigation (with bootstrap CIs) --")
@@ -1410,7 +1459,37 @@ def main() -> None:
                 group_thresholds_all[attr_name],
                 default_threshold=optimal_threshold,
             )
+        elif attr_name == "MaritalStatus" and ms_postprocessor is not None:
+            # MaritalStatus ThresholdOptimizer
+            fair_pred = safe_threshold_predict(
+                ms_postprocessor, X_test, sf_test[attr_name],
+            )
+            if fair_pred is not None and fair_pred.sum() == 0:
+                print(f"    [WARN] ThresholdOptimizer predicted all zeros for {attr_name}. "
+                      f"Falling back to subgroup thresholds.")
+                fair_pred = None
+            if fair_pred is None:
+                if attr_name not in group_thresholds_all:
+                    gt = compute_subgroup_thresholds(
+                        np.asarray(y_cal), fair_proba_cal, sf_cal[attr_name],
+                        default_threshold=optimal_threshold,
+                        min_threshold=0.08, max_threshold=0.50,
+                    )
+                    group_thresholds_all[attr_name] = gt
+                fair_pred = apply_subgroup_thresholds(
+                    fair_proba_test, sf_test[attr_name],
+                    group_thresholds_all[attr_name],
+                    default_threshold=optimal_threshold,
+                )
+        elif attr_name in group_thresholds_all:
+            # Any attribute with computed subgroup thresholds (DPD fallback)
+            fair_pred = apply_subgroup_thresholds(
+                fair_proba_test, sf_test[attr_name],
+                group_thresholds_all[attr_name],
+                default_threshold=optimal_threshold,
+            )
         else:
+            # Gender: global threshold
             fair_pred = (fair_proba_test >= optimal_threshold).astype(int)
 
         after_metrics = evaluate_fairness_metrics(

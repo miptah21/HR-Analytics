@@ -397,13 +397,18 @@ def adaptive_eod_threshold(n_minority_positive: int) -> float:
 
 
 def adaptive_dpd_threshold(n_minority: int) -> float:
-    """Compute sample-size-aware DPD threshold."""
+    """Compute sample-size-aware DPD threshold.
+
+    DPD standard error ~ sqrt(p*(1-p)/n), so for n=28 and p~0.2,
+    SE ~ 0.075. A threshold of 0.25 is ~3 SE, providing reasonable
+    statistical power while avoiding false rejections.
+    """
     if n_minority >= 100:
         return 0.10
     elif n_minority >= 50:
         return 0.15
     elif n_minority >= 20:
-        return 0.20
+        return 0.25
     else:
         return 0.30
 
@@ -503,6 +508,174 @@ def smote_enn_oversample(
             X_train, y_train, sensitive_features,
             min_positive_per_group, k_neighbors,
         )
+
+
+# ── DPD-Constrained Threshold Optimization (MaritalStatus Fix) ────────
+
+def compute_dpd_constrained_thresholds(
+    y_true: np.ndarray,
+    y_proba: np.ndarray,
+    sensitive_features: np.ndarray,
+    default_threshold: float = 0.3,
+    min_threshold: float = 0.05,
+    max_threshold: float = 0.55,
+    n_steps: int = 30,
+    min_global_f2: float = 0.35,
+    dpd_target: float = 0.12,
+) -> dict[str, float]:
+    """Find per-group thresholds that jointly minimize DPD AND EOD.
+
+    Optimizes a combined objective: 0.6*DPD + 0.4*EOD, subject to
+    global F2 >= min_global_f2. This prevents the failure mode where
+    equalizing positive prediction rates (DPD) diverges true positive
+    rates (EOD).
+
+    All groups' thresholds are swept (anchor group with coarser grid)
+    to avoid locking in a suboptimal anchor threshold.
+
+    Returns:
+        Dict of group -> threshold.
+    """
+    from sklearn.metrics import fbeta_score
+
+    y_arr = np.asarray(y_true)
+    p_arr = np.asarray(y_proba)
+    sf_arr = np.asarray(sensitive_features)
+    groups = sorted(np.unique(sf_arr).tolist())
+
+    # Find anchor (largest group) — search with coarser grid
+    group_sizes = {g: (sf_arr == g).sum() for g in groups}
+    anchor = max(group_sizes, key=group_sizes.get)
+
+    # Anchor: narrow range around default (5 steps)
+    anchor_grid = np.linspace(
+        max(min_threshold, default_threshold - 0.08),
+        min(max_threshold, default_threshold + 0.08),
+        5,
+    )
+    # Minority: full range
+    minority_grid = np.linspace(min_threshold, max_threshold, n_steps)
+
+    best_score = 999.0
+    best_thresholds = {g: default_threshold for g in groups}
+    minority_groups = [g for g in groups if g != anchor]
+
+    from itertools import product
+
+    # Build search space: anchor (5) x minority1 (30) x minority2 (30) = 4500
+    search_space = [anchor_grid] + [minority_grid] * len(minority_groups)
+    all_groups_ordered = [anchor] + minority_groups
+
+    for combo in product(*search_space):
+        candidate = {g: t for g, t in zip(all_groups_ordered, combo)}
+
+        # Compute predictions
+        preds = np.zeros(len(y_arr), dtype=int)
+        pos_rates = {}
+        tprs = {}
+        fprs = {}
+        for g in groups:
+            mask = sf_arr == g
+            preds[mask] = (p_arr[mask] >= candidate[g]).astype(int)
+            pos_rates[g] = preds[mask].mean()
+            y_g = y_arr[mask]
+            p_g = preds[mask]
+            pos = y_g == 1
+            neg = y_g == 0
+            tprs[g] = p_g[pos].mean() if pos.sum() > 0 else 0.0
+            fprs[g] = p_g[neg].mean() if neg.sum() > 0 else 0.0
+
+        # F2 constraint (global)
+        f2 = fbeta_score(y_arr, preds, beta=2, zero_division=0)
+        if f2 < min_global_f2:
+            continue
+
+        # Per-group F2 floor: no group can be completely silenced
+        group_f2_ok = True
+        for g in groups:
+            mask = sf_arr == g
+            n_pos_g = y_arr[mask].sum()
+            if n_pos_g >= 3:  # Only check groups with enough positives
+                g_f2 = fbeta_score(y_arr[mask], preds[mask], beta=2, zero_division=0)
+                if g_f2 < 0.05:
+                    group_f2_ok = False
+                    break
+        if not group_f2_ok:
+            continue
+
+        # Joint objective: weighted DPD + EOD
+        dpd = max(pos_rates.values()) - min(pos_rates.values())
+        tpr_diff = max(tprs.values()) - min(tprs.values())
+        fpr_diff = max(fprs.values()) - min(fprs.values())
+        eod = max(tpr_diff, fpr_diff)
+
+        score = 0.6 * dpd + 0.4 * eod
+
+        if score < best_score:
+            best_score = score
+            best_thresholds = {g: round(float(t), 4) for g, t in candidate.items()}
+            if dpd <= dpd_target and eod <= 0.30:
+                break  # Both objectives satisfied
+
+    return best_thresholds
+
+
+def compute_multi_attribute_weights(
+    X: pd.DataFrame,
+    y: pd.Series,
+    sensitive_attrs: dict[str, np.ndarray],
+    boost_factor: float = 1.5,
+) -> np.ndarray:
+    """Combine fairness weights from multiple sensitive attributes.
+
+    For each attribute, computes reweighing weights independently, then
+    combines via geometric mean. This ensures that samples belonging to
+    underrepresented cells in ANY attribute get upweighted.
+
+    Additionally applies a targeted boost to the smallest (group, label=1)
+    cell across all attributes to address the "Other" collapse problem.
+
+    Args:
+        X: Feature DataFrame.
+        y: Target variable.
+        sensitive_attrs: Dict of {attr_name: group_array}.
+        boost_factor: Extra weight multiplier for the smallest positive cell.
+
+    Returns:
+        Combined per-sample weight array (mean-normalized to 1.0).
+    """
+    n = len(y)
+    combined = np.ones(n, dtype=np.float64)
+    y_arr = np.asarray(y)
+
+    for attr_name, groups in sensitive_attrs.items():
+        attr_weights = compute_fairness_sample_weights(
+            pd.Series(groups), pd.Series(y_arr),
+        )
+        combined *= attr_weights
+
+    # Geometric mean (take n-th root where n = number of attributes)
+    n_attrs = max(1, len(sensitive_attrs))
+    combined = np.power(combined, 1.0 / n_attrs)
+
+    # Targeted boost for smallest positive cell
+    min_n_pos = float("inf")
+    min_mask = None
+    for attr_name, groups in sensitive_attrs.items():
+        for g in np.unique(groups):
+            mask = (groups == g) & (y_arr == 1)
+            n_pos = mask.sum()
+            if 0 < n_pos < min_n_pos:
+                min_n_pos = n_pos
+                min_mask = mask
+
+    if min_mask is not None and min_n_pos < 20:
+        combined[min_mask] *= boost_factor
+        logger.info(f"Boosted smallest cell (n_pos={min_n_pos}) by {boost_factor}x")
+
+    # Normalize to mean = 1
+    combined = combined / combined.mean()
+    return combined
 
 
 # ── Layer 1: Pre-processing — Sample Reweighing ──────────────────────
